@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no"/>
+
+		<script>
+			function rotator(playerList) {
+				const l = playerList.length;
+				const consecutiveMatches = [];
+				const normalMatches = [];
+
+				// Index that keeps track of the rotation turns for each type
+				let ii = 0;
+				let jj = 0;
+
+				// Creation of the player pairs for consecutive games
+				for (let i = 0; i < l; i++) {
+					for (let j = 0; j < l; j++) {
+						if (j != i) {
+							consecutiveMatches.push([playerList[i], playerList[j]]);
+						}
+					}
+				}
+
+				// Creation of the player pairs for non-consecitive games (normal rotations)
+				for (let i = 0; i < l - 1; i++) {
+					for (let j = i + 1; j < l; j++) {
+						normalMatches.push([playerList[i], playerList[j]]);
+					}
+				}
+
+				return {
+					nextConsecutive: function () {
+						return consecutiveMatches[ii++ % consecutiveMatches.length];
+					},
+
+					nextRotation: function () {
+						return normalMatches[jj++ % normalMatches.length];
+					}
+				};
+			}
+		</script>
+
+		<script>
+			// Used for access to the same local storage key across functions
+			const LAST_PLAYERS = 'last_players';
+
+			function getPlayerList(listElement) {
+				let playerNodes = listElement.children;
+				let players = [];
+
+				for (let i = 0 ; i < playerNodes.length; i++)
+					players[i] = playerNodes[i].children[1].textContent;
+
+				return players;
+			}
+
+			function updatePlayersListOnLocalStorage(listElement) {
+				const players = getPlayerList(listElement);
+				window.localStorage.setItem(LAST_PLAYERS, JSON.stringify(players));
+			}
+
+			function removePlayer(removeBtn) {
+				let li = removeBtn.parentElement;
+				let ul = li.parentElement;
+
+				ul.removeChild(li);
+
+				// Update the record of players on local storage
+				updatePlayersListOnLocalStorage(ul);
+			}
+
+			function removeAllPlayers(listElement) {
+				listElement.innerHTML = '';
+
+				// Update the record of players on local storage
+				updatePlayersListOnLocalStorage(listElement);
+			}
+
+			function addPlayerTo(listElement, playerName) {
+				if (playerName !== "") {
+					const li = document.createElement("li");
+					const liContent = document.createElement("p");
+
+					const liPlayer = document.createElement("span");
+					const liRemoveBtn = document.createElement("button");
+					liRemoveBtn.appendChild(document.createTextNode("-"));
+					liRemoveBtn.style.marginRight = "5px";
+					liRemoveBtn.addEventListener("click", e => {
+						removePlayer(liRemoveBtn);
+					});
+
+					const liPlayerName = document.createTextNode(playerName);
+
+					// Add the player name text to the span that holds the name
+					liPlayer.appendChild(liPlayerName);
+
+					// Add the span and the button to the li element
+					li.appendChild(liRemoveBtn);
+					li.appendChild(liPlayer);
+
+					listElement.appendChild(li);
+
+					// Update the record of players on local storage
+					updatePlayersListOnLocalStorage(listElement);
+				}
+			}
+
+			function loadPlayersGui(startRotationCallback) {
+				const body = document.body;
+				const playerTitle = document.createElement("h1");
+				const addPlayersInterface = document.createElement("p");
+
+				// Creating the page elements
+				playerTitle.appendChild(document.createTextNode("Players"));
+				
+				addPlayersInterface.setAttribute("id", "add_player_interface");
+
+				const listElement = document.createElement("ul");
+				const addPlayerBtn = document.createElement("button");
+				const addPlayerTxt = document.createElement("input");
+				const clearPlayersListBtn = document.createElement("button");
+				const startBtn = document.createElement("button");
+
+				listElement.setAttribute("id", "players");
+
+				addPlayerBtn.setAttribute("id", "add_player_btn");
+				addPlayerBtn.setAttribute("type", "button");
+				addPlayerBtn.appendChild(document.createTextNode("+"));
+				addPlayerBtn.style.marginRight = "5px";
+
+				addPlayerTxt.setAttribute("id", "add_player_txt");
+				addPlayerTxt.setAttribute("type", "text");
+				addPlayerTxt.setAttribute("placeholder", "Player Name");
+
+				clearPlayersListBtn.setAttribute("id", "clear_players_btn");
+				clearPlayersListBtn.setAttribute("type", "button");
+				clearPlayersListBtn.appendChild(document.createTextNode("Clear All"));
+
+				startBtn.setAttribute("id", "start_rotation_btn");
+				startBtn.setAttribute("type", "button");
+				startBtn.appendChild(document.createTextNode("Start!"));
+
+
+				// Assembling the page elements
+				addPlayersInterface.appendChild(addPlayerBtn);
+				addPlayersInterface.appendChild(addPlayerTxt);
+
+				body.appendChild(playerTitle);
+				body.appendChild(listElement);
+				body.appendChild(addPlayersInterface);
+				body.appendChild(clearPlayersListBtn);
+
+				body.appendChild(document.createElement('br'));
+				body.appendChild(document.createElement('br'));
+
+				body.appendChild(startBtn);
+
+				addPlayerBtn.addEventListener("click", e => {
+					if (addPlayerTxt !== "") {
+						addPlayerTo(listElement, addPlayerTxt.value);
+						addPlayerTxt.value = "";
+					}
+				});
+
+				addPlayerTxt.addEventListener("keyup", e => {
+					if (e.which === 13 && addPlayerTxt !== "") {
+						addPlayerTo(listElement, addPlayerTxt.value);
+						addPlayerTxt.value = "";
+					}
+				});
+
+				clearPlayersListBtn.addEventListener("click", e => {
+					removeAllPlayers(listElement);
+				});
+
+				startBtn.addEventListener("click", e => {
+					const players = getPlayerList(listElement);
+
+					// Only go to the next part if there are players to rotate
+					if (players.length > 1) {
+						// Clear the GUI
+						document.body.innerHTML = '';
+
+						// Call the start rotation callback
+						startRotationCallback(players, loadPlayersGui);
+					}
+				});
+
+				// Restore any old list of players that were input before
+				const fromStorage = JSON.parse(window.localStorage.getItem(LAST_PLAYERS));
+				const oldPlayers = fromStorage ? fromStorage : [];
+
+				for (let i in oldPlayers) {
+					addPlayerTo(listElement, oldPlayers[i]);
+				}
+			}
+
+			function displayPlayers(pair, element) {
+				const p1 = pair[0];
+				const p2 = pair[1];
+
+				element.innerHTML = '';
+				element.appendChild(document.createTextNode(p1 + " vs " + p2));
+			}
+
+			function startRotationGui(players, endRotationCallback) {
+				// Rotator used to calculate the next pair of players
+				const r = rotator(players);
+
+				// Shortcut for the documenet body
+				const body = document.body;
+
+				// Creation of the elements specific to this page
+				const vs = document.createElement('h1');
+				const interactionGUI = document.createElement('p');
+
+				vs.setAttribute('id', 'vs_title');
+				interactionGUI.setAttribute('id', 'vs_wrapper');
+
+				// Creation of the interaction GUI
+				const nextMatchBtn = document.createElement("button");
+				const backBtn = document.createElement("button");
+
+				nextMatchBtn.setAttribute('id', 'next_match_btn');
+				nextMatchBtn.setAttribute('type', 'button');
+				nextMatchBtn.style.marginRight = "5px";
+				nextMatchBtn.appendChild(document.createTextNode('Next Match!'));
+
+				backBtn.setAttribute('id', 'back_to_main_btn');
+				backBtn.setAttribute('type', 'button');
+				backBtn.appendChild(document.createTextNode('Back to List'));
+
+
+				// Display who will be playing in the rotation
+				displayPlayers(r.nextRotation(), vs);
+				nextMatchBtn.addEventListener('click', e => {
+					displayPlayers(r.nextRotation(), vs);
+				});
+
+				// Return to the original menu
+				backBtn.addEventListener("click", e => {
+					body.innerHTML = '';
+
+					endRotationCallback(startRotationGui);
+				});
+
+				interactionGUI.appendChild(nextMatchBtn);
+				interactionGUI.appendChild(backBtn);
+
+				body.appendChild(vs);
+				body.appendChild(document.createElement('br'));
+				body.appendChild(interactionGUI);
+			}
+
+			function init(e) {
+				loadPlayersGui(startRotationGui);
+			}
+		</script>
+
+		<script>
+			window.addEventListener("load", init);
+		</script>
+	</head>
+
+	<!-- What is the word? -->
+	<body></body>
+</html>
