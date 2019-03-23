@@ -8,6 +8,7 @@
 
 		<style>
 			* {
+				color: rgb(204, 200, 180);
 				font-family: 'Ubuntu Mono', monospace;
 			}
 
@@ -18,9 +19,17 @@
 			}
 
 			body {
+				background-color: #222;
 				margin: 0;
 				padding: 0;
 				text-align: center;
+			}
+
+			button {
+				background: none;
+				background-image: linear-gradient(#444, #000);
+				border: 1px solid #111;
+				font-size: 1.15em;
 			}
 
 			#page_wrap {
@@ -33,11 +42,25 @@
 
 			h1 {
 				font-family: 'Lobster', sans-serif;
+				font-size: 3.2em;
+			}
+
+			input {
+				background: none;
+				background-color: #333;
+				border: 1px solid #111;
+				padding: 4px;
+				font-size: 1.25em;
+			}
+
+			ul {
+				list-style: none;
+				padding-left: 0;
 			}
 
 			li {
-				list-style: none;
 				margin-top: 4px;
+				font-size: 1.25em;
 			}
 
 			li:first-child {
@@ -78,6 +101,14 @@
 
 					nextRotation: function () {
 						return normalMatches[jj++ % normalMatches.length];
+					},
+
+					getConsecutiveMatches: function () {
+						return consecutiveMatches.map(e => e);
+					},
+
+					getNormalMatches: function () {
+						return normalMatches.map(e => e);
 					}
 				};
 			}
@@ -119,10 +150,22 @@
 				updatePlayersListOnLocalStorage(listElement);
 			}
 
-			function addPlayerTo(listElement, playerName) {
+			function addPlayersToVsList(listElement, players) {
+				for (let i in players) {
+					const li = document.createElement("li");
+					
+					const liPlayer = document.createElement("span");
+					liPlayer.appendChild(document.createTextNode(players[i].join(" vs ")));
+
+					li.appendChild(liPlayer);
+
+					listElement.appendChild(li);
+				}
+			}
+
+			function addPlayerToLoadList(listElement, playerName) {
 				if (playerName !== "") {
 					const li = document.createElement("li");
-					const liContent = document.createElement("p");
 
 					const liPlayer = document.createElement("span");
 					const liRemoveBtn = document.createElement("button");
@@ -194,8 +237,8 @@
 				addPlayersInterface.appendChild(addPlayerTxt);
 
 				body.appendChild(playerTitle);
-				body.appendChild(listElement);
 				body.appendChild(addPlayersInterface);
+				body.appendChild(listElement);
 				body.appendChild(clearPlayersListBtn);
 
 				body.appendChild(document.createElement('br'));
@@ -205,14 +248,14 @@
 
 				addPlayerBtn.addEventListener("click", e => {
 					if (addPlayerTxt !== "") {
-						addPlayerTo(listElement, addPlayerTxt.value);
+						addPlayerToLoadList(listElement, addPlayerTxt.value);
 						addPlayerTxt.value = "";
 					}
 				});
 
 				addPlayerTxt.addEventListener("keyup", e => {
 					if (e.which === 13 && addPlayerTxt !== "") {
-						addPlayerTo(listElement, addPlayerTxt.value);
+						addPlayerToLoadList(listElement, addPlayerTxt.value);
 						addPlayerTxt.value = "";
 					}
 				});
@@ -239,7 +282,7 @@
 				const oldPlayers = fromStorage ? fromStorage : [];
 
 				for (let i in oldPlayers) {
-					addPlayerTo(listElement, oldPlayers[i]);
+					addPlayerToLoadList(listElement, oldPlayers[i]);
 				}
 			}
 
@@ -271,6 +314,7 @@
 				// Creation of the interaction GUI
 				const nextMatchBtn = document.createElement("button");
 				const backBtn = document.createElement("button");
+				const matchesList = document.createElement("ol");
 
 				nextMatchBtn.setAttribute('id', 'next_match_btn');
 				nextMatchBtn.setAttribute('type', 'button');
@@ -281,11 +325,13 @@
 				backBtn.setAttribute('type', 'button');
 				backBtn.appendChild(document.createTextNode('Back to List'));
 
+				matchesList.setAttribute('id', 'matches_list');
+				addPlayersToVsList(matchesList, r.getConsecutiveMatches());
 
 				// Display who will be playing in the rotation
-				displayPlayers(r.nextRotation(), vs);
+				displayPlayers(r.nextConsecutive(), vs);
 				nextMatchBtn.addEventListener('click', e => {
-					displayPlayers(r.nextRotation(), vs);
+					displayPlayers(r.nextConsecutive(), vs);
 				});
 
 				// Return to the original menu
@@ -299,8 +345,8 @@
 				interactionGUI.appendChild(backBtn);
 
 				body.appendChild(vs);
-				body.appendChild(document.createElement('br'));
 				body.appendChild(interactionGUI);
+				body.appendChild(matchesList);
 			}
 
 			function init(e) {
