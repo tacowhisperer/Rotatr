@@ -64,10 +64,15 @@
 				text-align: center;
 			}
 
-			ul, ol {
+			ul {
 				list-style: none;
+			}
+
+			ul, ol {
 				padding: 0;
-				text-align: center;
+				text-align: left;
+				margin: 0 auto;
+				display: inline-block;
 			}
 
 			li {
@@ -77,6 +82,11 @@
 
 			li:first-child {
 				margin: 0;
+			}
+
+			#list_element_wrapper {
+				width: 100%;
+				display: inline-block;
 			}
 		</style>
 
@@ -213,12 +223,14 @@
 				const playerTitle = document.createElement("h1");
 				const addPlayersInterface = document.createElement("p");
 				const bottomInterface = document.createElement("p");
+				const listElementWrapper = document.createElement("p");
 
 				// Creating the page elements
 				playerTitle.appendChild(document.createTextNode("Players"));
 				
 				addPlayersInterface.setAttribute("id", "add_player_interface");
 				bottomInterface.setAttribute("id", "start_remove_interface");
+				listElementWrapper.setAttribute("id", "list_element_wrapper");
 
 				const listElement = document.createElement("ul");
 				const addPlayerBtn = document.createElement("button");
@@ -227,6 +239,7 @@
 				const startBtn = document.createElement("button");
 
 				listElement.setAttribute("id", "players");
+				listElementWrapper.appendChild(listElement);
 
 				addPlayerBtn.setAttribute("id", "add_player_btn");
 				addPlayerBtn.setAttribute("type", "button");
@@ -255,7 +268,7 @@
 
 				body.appendChild(playerTitle);
 				body.appendChild(addPlayersInterface);
-				body.appendChild(listElement);
+				body.appendChild(listElementWrapper);
 				body.appendChild(bottomInterface);
 
 				addPlayerBtn.addEventListener("click", e => {
@@ -326,6 +339,7 @@
 				// Creation of the interaction GUI
 				const nextMatchBtn = document.createElement("button");
 				const backBtn = document.createElement("button");
+				const matchesListWrapper = document.createElement("p");
 				const matchesList = document.createElement("ol");
 
 				nextMatchBtn.setAttribute('id', 'next_match_btn');
@@ -339,6 +353,9 @@
 
 				matchesList.setAttribute('id', 'matches_list');
 				addPlayersToVsList(matchesList, r.getConsecutiveMatches());
+
+				matchesListWrapper.setAttribute("id", "matches_list_wrapper");
+				matchesListWrapper.appendChild(matchesList);
 
 				// Display who will be playing in the rotation
 				displayPlayers(r.nextConsecutive(), vs);
@@ -358,7 +375,7 @@
 
 				body.appendChild(vs);
 				body.appendChild(interactionGUI);
-				body.appendChild(matchesList);
+				body.appendChild(matchesListWrapper);
 			}
 
 			function init(e) {
