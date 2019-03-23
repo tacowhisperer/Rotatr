@@ -1,7 +1,11 @@
 <!DOCTYPE html>
 <html>
 	<head>
+		<title>Rotatr</title>
+
 		<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1"/>
+
+		<meta name="theme-color" content="#222222"/>
 
 		<!-- Fancy Google Fonts to make the page look less ugly. -->
 		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Ubuntu+Mono|Quicksand|Lobster"/>
@@ -30,6 +34,7 @@
 				background-image: linear-gradient(#444, #000);
 				border: 1px solid #111;
 				font-size: 1.15em;
+				padding: 5px 10px;
 			}
 
 			#page_wrap {
@@ -38,11 +43,13 @@
 				margin-bottom: 0;
 				margin: 0 auto;
 				text-align: left;
+				width: 100%;
 			}
 
 			h1 {
 				font-family: 'Lobster', sans-serif;
 				font-size: 3.2em;
+				text-align: center;
 			}
 
 			input {
@@ -53,9 +60,14 @@
 				font-size: 1.25em;
 			}
 
-			ul {
+			p {
+				text-align: center;
+			}
+
+			ul, ol {
 				list-style: none;
-				padding-left: 0;
+				padding: 0;
+				text-align: center;
 			}
 
 			li {
@@ -200,11 +212,13 @@
 
 				const playerTitle = document.createElement("h1");
 				const addPlayersInterface = document.createElement("p");
+				const bottomInterface = document.createElement("p");
 
 				// Creating the page elements
 				playerTitle.appendChild(document.createTextNode("Players"));
 				
 				addPlayersInterface.setAttribute("id", "add_player_interface");
+				bottomInterface.setAttribute("id", "start_remove_interface");
 
 				const listElement = document.createElement("ul");
 				const addPlayerBtn = document.createElement("button");
@@ -230,21 +244,19 @@
 				startBtn.setAttribute("id", "start_rotation_btn");
 				startBtn.setAttribute("type", "button");
 				startBtn.appendChild(document.createTextNode("Start!"));
-
+				startBtn.style.marginRight = "5px";
 
 				// Assembling the page elements
 				addPlayersInterface.appendChild(addPlayerBtn);
 				addPlayersInterface.appendChild(addPlayerTxt);
 
+				bottomInterface.appendChild(startBtn);
+				bottomInterface.appendChild(clearPlayersListBtn);
+
 				body.appendChild(playerTitle);
 				body.appendChild(addPlayersInterface);
 				body.appendChild(listElement);
-				body.appendChild(clearPlayersListBtn);
-
-				body.appendChild(document.createElement('br'));
-				body.appendChild(document.createElement('br'));
-
-				body.appendChild(startBtn);
+				body.appendChild(bottomInterface);
 
 				addPlayerBtn.addEventListener("click", e => {
 					if (addPlayerTxt !== "") {
@@ -336,7 +348,7 @@
 
 				// Return to the original menu
 				backBtn.addEventListener("click", e => {
-					body.innerHTML = '';
+					document.body.innerHTML = '';
 
 					endRotationCallback(startRotationGui);
 				});
