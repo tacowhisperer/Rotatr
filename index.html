@@ -3,6 +3,48 @@
 	<head>
 		<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no"/>
 
+		<!-- Fancy Google Fonts to make the page look less ugly. -->
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Ubuntu+Mono|Quicksand|Lobster"/>
+
+		<style>
+			* {
+				font-family: 'Ubuntu Mono', monospace;
+			}
+
+			html {
+				padding: 0;
+				margin: 0;
+				height: 100%;
+			}
+
+			body {
+				margin: 0;
+				padding: 0;
+				text-align: center;
+			}
+
+			#page_wrap {
+				display: inline-block;
+				margin-top: 0;
+				margin-bottom: 0;
+				margin: 0 auto;
+				text-align: left;
+			}
+
+			h1 {
+				font-family: 'Lobster', sans-serif;
+			}
+
+			li {
+				list-style: none;
+				margin-top: 4px;
+			}
+
+			li:first-child {
+				margin: 0;
+			}
+		</style>
+
 		<script>
 			function rotator(playerList) {
 				const l = playerList.length;
@@ -107,7 +149,12 @@
 			}
 
 			function loadPlayersGui(startRotationCallback) {
-				const body = document.body;
+				// Shortcut for the documenet body
+				const body = document.createElement('div');
+				body.setAttribute('id', 'page_wrap');
+
+				document.body.appendChild(body);
+
 				const playerTitle = document.createElement("h1");
 				const addPlayersInterface = document.createElement("p");
 
@@ -209,7 +256,10 @@
 				const r = rotator(players);
 
 				// Shortcut for the documenet body
-				const body = document.body;
+				const body = document.createElement('div');
+				body.setAttribute('id', 'page_wrap');
+
+				document.body.appendChild(body);
 
 				// Creation of the elements specific to this page
 				const vs = document.createElement('h1');
