@@ -5,7 +5,7 @@
 
 		<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1"/>
 
-		<meta name="theme-color" content="#222222"/>
+		<meta id="theme_color" name="theme-color" content="#222222"/>
 
 		<!-- Fancy Google Fonts to make the page look less ugly. -->
 		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Ubuntu+Mono|Quicksand|Lobster"/>
@@ -87,6 +87,12 @@
 			#list_element_wrapper {
 				width: 100%;
 				display: inline-block;
+				margin: 0;
+				padding: 0;
+			}
+
+			#players_title {
+				margin-top: 0;
 			}
 		</style>
 
@@ -137,8 +143,75 @@
 		</script>
 
 		<script>
+			function themer(useNightMode) {
+				let nightModeEnabled = useNightMode;
+
+				return {
+					DAY: {
+						backgroundColor: '#f7f7f7',
+						buttonText: '&#9790;',
+						color: '#222222'
+					},
+
+					NIGHT: {
+						backgroundColor: '#222222',
+						buttonText: '&#9728;',
+						color: '#ccc8b4'
+					},
+
+					toggle: function() {
+
+					}
+				};
+			}
+		</script>
+
+		<script>
+			function animateOpacityOf(element, targetValue, duration, callback, callbackArgs) {
+				const e = element;
+				const cv = +window.getComputedStyle(element).getPropertyValue("opacity");
+				const tv = targetValue;
+				const f = callback ? callback : function() {};
+				const args = callbackArgs ? callbackArgs : [];
+				const t0 = Date.now();
+				const d = duration;
+
+				const animator = function() {
+					const t = Date.now();
+					if ((t - t0) <= d) {
+						let q = (1 - Math.cos(Math.PI * ((t - t0) / d))) / 2;
+						let p = 1 - q;
+
+						e.style.opacity = "" + (p * cv + q * tv);
+
+						window.requestAnimationFrame(animator);
+					} else {
+						e.style.opacity = "" + tv;
+						f.apply(f, args);
+					}
+				};
+
+				window.requestAnimationFrame(animator);
+			}
+		</script>
+
+		<script>
+			// Used for animatino timings
+			const FADE_DURATION = 50;
+
 			// Used for access to the same local storage key across functions
 			const LAST_PLAYERS = 'last_players';
+
+			// Used for access to the night mode theme color
+			const NIGHT_MODE = 'night_mode';
+
+			function addThemeButton() {
+				const t = themer();
+				const toggle = document.createElement("button");
+
+				toggle.setAttribute("id", "theme_toggle_btn");
+				toggle.setAttribute("type", "button");
+			}
 
 			function getPlayerList(listElement) {
 				let playerNodes = listElement.children;
@@ -226,19 +299,24 @@
 				const listElementWrapper = document.createElement("p");
 
 				// Creating the page elements
-				playerTitle.appendChild(document.createTextNode("Players"));
+				playerTitle.appendChild(document.createTextNode("Rotatr"));
 				
 				addPlayersInterface.setAttribute("id", "add_player_interface");
 				bottomInterface.setAttribute("id", "start_remove_interface");
 				listElementWrapper.setAttribute("id", "list_element_wrapper");
 
+				const listElementTitle = document.createElement("h2");
 				const listElement = document.createElement("ul");
 				const addPlayerBtn = document.createElement("button");
 				const addPlayerTxt = document.createElement("input");
 				const clearPlayersListBtn = document.createElement("button");
 				const startBtn = document.createElement("button");
 
+				listElementTitle.setAttribute("id", "players_title");
+				listElementTitle.appendChild(document.createTextNode("Players"));
+
 				listElement.setAttribute("id", "players");
+				listElementWrapper.appendChild(listElementTitle);
 				listElementWrapper.appendChild(listElement);
 
 				addPlayerBtn.setAttribute("id", "add_player_btn");
@@ -294,11 +372,17 @@
 
 					// Only go to the next part if there are players to rotate
 					if (players.length > 1) {
-						// Clear the GUI
-						document.body.innerHTML = '';
+						// Fade out the GUI
+						animateOpacityOf(document.body, 0, FADE_DURATION, () => {
+							// Clear the GUI
+							document.body.innerHTML = '';
 
-						// Call the start rotation callback
-						startRotationCallback(players, loadPlayersGui);
+							// Call the start rotation callback
+							startRotationCallback(players, loadPlayersGui);
+
+							// Fade the GUI back in
+							animateOpacityOf(document.body, 1, FADE_DURATION);
+						});
 					}
 				});
 
@@ -365,9 +449,17 @@
 
 				// Return to the original menu
 				backBtn.addEventListener("click", e => {
-					document.body.innerHTML = '';
+					// Fade the GUI out
+					animateOpacityOf(document.body, 0, FADE_DURATION, () => {
+						// Clear the GUI contents
+						document.body.innerHTML = '';
 
-					endRotationCallback(startRotationGui);
+						// Populate the GUI with whatever elements the endrotationcallback function needs
+						endRotationCallback(startRotationGui);
+
+						// Fade the GUI back in
+						animateOpacityOf(document.body, 1, FADE_DURATION);
+					});
 				});
 
 				interactionGUI.appendChild(nextMatchBtn);
