@@ -25,6 +25,10 @@
 				font-family: 'Ubuntu Mono', monospace;
 			}
 
+			html, body {
+				height: 100%;
+			}
+
 			html {
 				padding: 0;
 				margin: 0;
@@ -47,12 +51,20 @@
 			}
 
 			#page_wrap {
-				display: inline-block;
+				display: table-cell;
 				margin-top: 0;
 				margin-bottom: 0;
 				margin: 0 auto;
 				text-align: left;
+				height: 100%;
+				vertical-align: middle;
 				width: 100%;
+			}
+
+			#page_main {
+				height: 100%;
+				width: 100%;
+				display: table;
 			}
 
 			h1 {
@@ -297,10 +309,14 @@
 
 			function loadPlayersGui(startRotationCallback) {
 				// Shortcut for the documenet body
+				const bodyMain = document.createElement('div');
 				const body = document.createElement('div');
+
+				bodyMain.setAttribute('id', 'page_main');
 				body.setAttribute('id', 'page_wrap');
 
-				document.body.appendChild(body);
+				bodyMain.appendChild(body);
+				document.body.appendChild(bodyMain);
 
 				const playerTitle = document.createElement("h1");
 				const addPlayersInterface = document.createElement("p");
@@ -417,10 +433,14 @@
 				const r = rotator(players);
 
 				// Shortcut for the documenet body
+				const bodyMain = document.createElement('div');
 				const body = document.createElement('div');
+
+				bodyMain.setAttribute('id', 'page_main');
 				body.setAttribute('id', 'page_wrap');
 
-				document.body.appendChild(body);
+				bodyMain.appendChild(body);
+				document.body.appendChild(bodyMain);
 
 				// Creation of the elements specific to this page
 				const vs = document.createElement('h1');
